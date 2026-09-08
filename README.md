@@ -115,13 +115,18 @@ Post a comment on an issue using a Hacker News story URL:
 
 The workflow fetches up to 50 top-level comments from Hacker News and replies on the issue with the positive, negative, and neutral sentiment breakdown.
 
-If the run reports `Permission denied and could not request permission from user` for `curl` or `wget`, keep shell disabled and tell the agent to use the configured `web_fetch` tool explicitly:
+Some Copilot runtimes accept `web-fetch` during compilation but do not expose a callable `web_fetch` tool. In that case, fetch the HN API data in a deterministic `steps:` entry and write it to `/tmp/gh-aw/agent/hn-data.json`; files in that directory are provided to the agent automatically. Keep shell and CLI-mounted tools disabled for the agent:
 
 ```yaml
 tools:
   bash: false
   cli-proxy: false
-  web-fetch: {}
+
+steps:
+	- name: Fetch Hacker News comments
+		run: |
+			mkdir -p /tmp/gh-aw/agent
+			# Fetch and validate only fixed Hacker News API URLs here.
 ```
 
 ### The Action fails while validating `COPILOT_GITHUB_TOKEN`
