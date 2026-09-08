@@ -49,6 +49,7 @@ steps:
         fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
       };
 
+      async function main() {
       if (!match) {
         writeResult({
           status: 'invalid_request',
@@ -90,6 +91,9 @@ steps:
       } catch (error) {
         writeResult({ status: 'fetch_error', itemId, error: error.message });
       }
+      }
+
+      main();
       NODE
 
 # Network access
