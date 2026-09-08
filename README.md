@@ -79,6 +79,14 @@ gh aw new --interactive
 
 The wizard is a CLI form, not a GitHub Copilot Chat session. Generated initialization files may also differ between `gh-aw` versions. Use `git status` to see what your installed version created.
 
+For this workshop, initialize the current Copilot integration explicitly:
+
+```powershell
+gh aw init --engine copilot
+```
+
+Run `gh aw init --help` to verify the generated skill, custom agent, MCP configuration, and Copilot setup files for your installed version.
+
 ### `accepts at most 1 arg(s), received 2`
 
 Retype the option using two ASCII hyphens (`--`). Text copied from formatted documents may contain an en dash (`–`) instead:

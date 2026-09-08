@@ -22,15 +22,17 @@ Before a workflow can run in GitHub Actions, it must be **compiled** into a lock
 From the root of your repository, run:
 
 ```bash
-gh aw init
+gh aw init --engine copilot
 ```
 
-The command sets up your repository for agentic workflows. It creates several files, including:
+The command performs non-interactive repository setup for the Copilot engine. In current `gh-aw` releases it creates or updates files including:
 
 - `.gitattributes` — marks compiled lock files as generated
-- `.github/aw/github-agentic-workflows.md` — the full reference documentation
-- `.github/agents/agentic-workflows.agent.md` — an AI assistant for creating and editing workflows
-- `.vscode/settings.json` and `.vscode/mcp.json` — editor configuration
+- `.github/skills/agentic-workflows/SKILL.md` — the workflow-authoring dispatcher skill
+- `.github/agents/agentic-workflows.md` — the Copilot custom agent
+- `.github/mcp.json` — the gh-aw MCP server configuration
+- `.github/workflows/copilot-setup-steps.yml` — setup used by the Copilot coding agent
+- `.vscode/settings.json` — editor configuration
 
 > [!NOTE]
 > `gh aw init` requires write access to the repository. Make sure you are working in your fork.
@@ -41,12 +43,12 @@ After `init` completes, explore what was created:
 
 ```bash
 git status
-ls .github/aw/
+ls .github/skills/agentic-workflows/
 ls .github/agents/
 ```
 
 > [!TIP]
-> The file `.github/aw/github-agentic-workflows.md` is the complete reference for all frontmatter options. Open it whenever you need to check supported triggers, tools, or permissions.
+> Generated files can vary with flags and `gh-aw` versions. Use `gh aw init --help` and `git status` as the source of truth for your installation.
 
 ## Part 2 — Create a Daily Digest for Issues and Pull Requests
 
@@ -56,7 +58,25 @@ Create your first workflow using `gh aw new`:
 gh aw new daily-digest
 ```
 
-In current `gh-aw` releases, a named command creates a starter workflow rather than opening an AI chat. Open `.github/workflows/daily-digest.md` and replace its prompt with:
+In current `gh-aw` releases, a named command creates a heavily commented template rather than opening an AI chat. Replace its frontmatter with this focused configuration:
+
+```yaml
+---
+name: Daily Digest
+on:
+  schedule: daily on weekdays
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+safe-outputs:
+  create-issue:
+    max: 1
+---
+```
+
+Then replace the template body with:
 
 ```
 Every weekday, create a GitHub issue that summarises all open issues
@@ -81,31 +101,13 @@ You will have:
 - `.github/workflows/daily-digest.md` — the human-readable workflow with YAML frontmatter and your prompt
 - `.github/workflows/daily-digest.lock.yml` — the compiled machine-readable file for GitHub Actions
 
-Open the markdown file to see what the agent wrote:
+Open the markdown file to review your completed workflow:
 
 ```bash
 cat .github/workflows/daily-digest.md
 ```
 
-The frontmatter will look similar to:
-
-```yaml
----
-name: Daily Digest
-on:
-  schedule: daily on weekdays
-  workflow_dispatch:
-permissions:
-  contents: read
-  issues: read
-  pull-requests: read
-safe-outputs:
-  create-issue:
-    max: 1
----
-```
-
-And the body is a plain-English description of what the agent should do.
+Confirm that it contains the focused frontmatter and plain-English body above, without the unused commented examples from the starter template.
 
 > [!NOTE]
 > Keep the agent job read-only. `safe-outputs.create-issue` performs the write in a separately scoped job. Always compile after editing the workflow, including prompt-only edits, and never edit the `.lock.yml` by hand.
@@ -133,7 +135,7 @@ After the run completes (usually under a minute), open GitHub and check the **Is
 
 ## Success Criteria
 
-- [ ] `gh aw init` completed and created files in `.github/aw/` and `.github/agents/`
+- [ ] `gh aw init --engine copilot` completed and created the skill, agent, MCP, and Copilot setup files
 - [ ] `.github/workflows/daily-digest.md` exists in your repository
 - [ ] `.github/workflows/daily-digest.lock.yml` exists in your repository
 - [ ] The workflow was pushed and triggered without errors
