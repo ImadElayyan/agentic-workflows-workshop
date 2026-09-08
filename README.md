@@ -8,7 +8,7 @@ This repository contains the hands-on workshop for **Agentic Workflows with GitH
 
 **To begin the workshop, start at [workshop/README.md](./workshop/README.md)**
 
-Or visit the [published workshop site](https://copilot-dev-days.github.io/agentic-workflows-workshop).
+Or visit the [published workshop site](https://imadelayyan.github.io/agentic-workflows-workshop/).
 
 ## Repository Structure
 
@@ -36,7 +36,23 @@ Or visit the [published workshop site](https://copilot-dev-days.github.io/agenti
 
 ## Publishing
 
-The workshop site deploys automatically to GitHub Pages when you push to `main`. Enable GitHub Pages in your repository settings (Settings → Pages → Source: GitHub Actions).
+The workshop site deploys automatically to GitHub Pages when you push to `main`. The deployment publishes both `docs/` and `workshop/`, so each step viewer loads Markdown from this repository's Pages site.
+
+Enable GitHub Pages in **Settings → Pages → Source: GitHub Actions**, or run this once per fork:
+
+```powershell
+gh api --method POST repos/{owner}/{repo}/pages -f build_type=workflow
+```
+
+After pushing changes to `main`, monitor the deployment and retrieve the site URL:
+
+```powershell
+gh run list --workflow "Deploy to GitHub Pages" --limit 1
+gh api repos/{owner}/{repo}/pages --jq .html_url
+```
+
+> [!NOTE]
+> When adding or removing workshop lessons, update the cards in `docs/index.html` and the `steps` array in `docs/step.html`. Apply equivalent changes to localized viewers when their lesson sets change.
 
 ## Attendee Troubleshooting
 

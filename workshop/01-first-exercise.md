@@ -56,7 +56,7 @@ Create your first workflow using `gh aw new`:
 gh aw new daily-digest
 ```
 
-This opens an interactive session with the `agentic-workflows` AI agent. Describe what you want using plain English — for example:
+In current `gh-aw` releases, a named command creates a starter workflow rather than opening an AI chat. Open `.github/workflows/daily-digest.md` and replace its prompt with:
 
 ```
 Every weekday, create a GitHub issue that summarises all open issues
@@ -65,14 +65,18 @@ total count, the title, the author, and how long each item has been
 open. Title the issue "Daily Digest – <date>".
 ```
 
-The agent will ask clarifying questions (such as what trigger to use and whether write permissions are needed) and then generate the workflow file for you.
-
 > [!TIP]
-> You can also run `gh aw new daily-digest` non-interactively by providing your description via GitHub Copilot Chat — open Copilot Chat, type `/agent`, and select **agentic-workflows**.
+> Run `gh aw new --interactive` if you prefer the current CLI wizard. It is a terminal form, not a Copilot Chat session.
 
 ### What Gets Created
 
-After the agent finishes, you will have:
+After creating and editing the workflow, compile it:
+
+```bash
+gh aw compile daily-digest
+```
+
+You will have:
 
 - `.github/workflows/daily-digest.md` — the human-readable workflow with YAML frontmatter and your prompt
 - `.github/workflows/daily-digest.lock.yml` — the compiled machine-readable file for GitHub Actions
@@ -92,8 +96,9 @@ on:
   schedule: daily on weekdays
   workflow_dispatch:
 permissions:
-  issues: write
   contents: read
+  issues: read
+  pull-requests: read
 safe-outputs:
   create-issue:
     max: 1
@@ -103,7 +108,7 @@ safe-outputs:
 And the body is a plain-English description of what the agent should do.
 
 > [!NOTE]
-> Agentic workflow files are regular markdown — commit them to version control just like any other code. The `.lock.yml` is auto-generated and should not be edited by hand.
+> Keep the agent job read-only. `safe-outputs.create-issue` performs the write in a separately scoped job. Always compile after editing the workflow, including prompt-only edits, and never edit the `.lock.yml` by hand.
 
 ## Part 3 — Trigger the Workflow Manually
 

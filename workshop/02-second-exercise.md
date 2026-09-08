@@ -28,7 +28,7 @@ Create the workflow with `gh aw new`:
 gh aw new hn-daily-digest
 ```
 
-When the interactive agent session opens, provide the following description:
+The named command creates a starter workflow. Open `.github/workflows/hn-daily-digest.md` and use this prompt:
 
 ```
 Create a daily digest workflow for professional developers, referencing
@@ -44,10 +44,8 @@ titled "HN Digest – <date>" with the results formatted as a Markdown
 table.
 ```
 
-The agent will confirm the trigger (weekday schedule), required tools (`web-fetch`, `github`), permissions (`issues: write`), and the network allowlist (the HN API domain), then generate the workflow files.
-
 > [!TIP]
-> You can also describe the workflow in GitHub Copilot Chat by typing `/agent` and selecting **agentic-workflows** — the agent will guide you through a conversational setup.
+> Run `gh aw new --interactive` to use the CLI wizard. Review the generated file either way; supported fields can change between `gh-aw` releases.
 
 ## Part 2 — Review and Refine the Workflow
 
@@ -68,22 +66,22 @@ on:
   schedule: daily on weekdays
   workflow_dispatch:
 permissions:
-  issues: write
   contents: read
+  issues: read
 network:
-  - hacker-news.firebaseio.com
-tools:
-  - web-fetch
+  allowed:
+    - defaults
+    - hacker-news.firebaseio.com
 safe-outputs:
   create-issue:
     max: 1
 ---
 ```
 
-**Markdown body** (after the frontmatter) — the plain-English instructions you gave to the agent. You can edit the body directly on GitHub.com or in any editor and your changes will take effect on the next run, **without recompiling**.
+**Markdown body** (after the frontmatter) — the plain-English instructions you gave to the agent.
 
 > [!NOTE]
-> If you want to change the trigger, tools, permissions, or network rules (the frontmatter), you need to recompile: `gh aw compile hn-daily-digest`.
+> Write operations belong in `safe-outputs`, not in the main agent job's permissions. Always run `gh aw compile hn-daily-digest` after changing either the frontmatter or prompt body.
 
 ### Things to Check
 
@@ -91,7 +89,7 @@ safe-outputs:
 2. **Schedule** — does it use fuzzy scheduling (`daily on weekdays`) rather than a fixed cron? Fuzzy scheduling is preferred because it distributes load and automatically adds `workflow_dispatch` for manual runs.
 3. **Prompt body** — does the body clearly describe the filtering criteria and the desired output format?
 
-If you want to adjust the prompt, simply edit the markdown body and the change takes effect on the next run. To update the frontmatter (e.g., add a network domain), edit the frontmatter and recompile:
+After any adjustment, compile the workflow:
 
 ```bash
 gh aw compile hn-daily-digest
@@ -122,7 +120,7 @@ Wait for the run to complete, then open GitHub and check the **Issues** tab.
 - The stories are genuinely relevant to enterprise software development (not general news or politics).
 
 > [!TIP]
-> If the output looks good but the formatting is off, edit the markdown body of `.github/workflows/hn-daily-digest.md` to add a specific output template, then push and re-run — no recompilation needed.
+> If the output looks good but the formatting is off, add a specific output template to `.github/workflows/hn-daily-digest.md`, compile it, then push and re-run.
 
 ## Success Criteria
 

@@ -31,7 +31,7 @@ Create the workflow with `gh aw new`:
 gh aw new hn-sentiment
 ```
 
-When the interactive session opens, describe what you want:
+The named command creates a starter workflow. Open `.github/workflows/hn-sentiment.md` and describe the behavior with this prompt:
 
 ```
 Create a ChatOps slash command called /hn-sentiment. When a user posts
@@ -52,11 +52,14 @@ If no URL is provided or the URL is not a valid Hacker News item,
 reply with a helpful error message.
 ```
 
-The agent will configure:
+Configure the workflow with:
 - **Trigger**: `issue_comment` with a condition that filters for comments starting with `/hn-sentiment`
-- **Tools**: `web-fetch` to call the Hacker News API
+- **Preprocessing step**: validated Hacker News API requests that write `/tmp/gh-aw/agent/hn-data.json`
 - **Network**: `hacker-news.firebaseio.com` in the allowlist
 - **Safe outputs**: `add-comment` to reply to the issue
+
+> [!IMPORTANT]
+> Some Copilot runtimes accept `web-fetch` during compilation but do not expose a callable `web_fetch` tool. The verified workflow in `.github/workflows/hn-sentiment.md` fetches and validates HN data in a deterministic `steps:` entry before the agent runs. Use that implementation as the reference for this exercise.
 
 ## Part 2 — Review the Generated Workflow
 
@@ -74,33 +77,39 @@ name: HN Sentiment Analysis
 on:
   issue_comment:
     types: [created]
-    if: startsWith(github.event.comment.body, '/hn-sentiment')
+if: startsWith(github.event.comment.body, '/hn-sentiment')
 permissions:
-  issues: write
   contents: read
+   issues: read
 network:
-  - hacker-news.firebaseio.com
+   allowed:
+      - defaults
+      - hacker-news.firebaseio.com
 tools:
-  - web-fetch
+   bash: false
+   cli-proxy: false
 safe-outputs:
   add-comment:
     max: 1
 ---
 ```
 
+The verified source also defines a `steps:` entry that validates the command, fetches fixed Hacker News API URLs, and writes `/tmp/gh-aw/agent/hn-data.json`. Copy that complete step from `.github/workflows/hn-sentiment.md`; do not use an abbreviated script in the runnable workflow.
+
 Things to verify:
 
-1. **Trigger condition** — the `if:` clause filters so the workflow only runs when someone types `/hn-sentiment`, not on every comment.
+1. **Trigger condition** — the top-level `if:` clause filters so the workflow only runs when someone types `/hn-sentiment`, not on every comment.
 2. **Network allowlist** — `hacker-news.firebaseio.com` must be listed so the agent can fetch story comments.
-3. **Safe output** — `add-comment` is declared so the agent can post the analysis back to the issue.
-4. **Prompt body** — the markdown body describes how to parse the URL, call the API, classify sentiment, and format the reply.
+3. **Deterministic input** — the preprocessing step validates a numeric HN item URL, fetches at most 50 top-level comments, and writes structured JSON under `/tmp/gh-aw/agent/`.
+4. **Safe output** — `add-comment` is declared so the agent can post the analysis back to the issue without granting the agent write permission.
+5. **Prompt body** — the agent treats fetched comment text as untrusted data, reads the JSON file, classifies sentiment, and formats the reply.
 
 > [!TIP]
-> You can edit the markdown body of `.github/workflows/hn-sentiment.md` directly (on GitHub.com or locally) without recompiling. For example, you can tweak the output template or adjust how excerpts are formatted.
+> The preprocessing script uses `async function main()` rather than top-level `await`. This avoids Node.js 22's ambiguous module syntax error when the script also uses CommonJS `require()`.
 
 ## Part 3 — Compile, Commit, and Push
 
-If the agent did not compile the workflow automatically, compile it now:
+Compile after every workflow edit, including prompt-only changes:
 
 ```bash
 gh aw compile hn-sentiment
@@ -164,7 +173,9 @@ git push
 | Agent doesn't reply | Check that the lock file is on the default branch and that the trigger condition matches. |
 | "Item not found" error | Verify the Hacker News item ID is correct and the story is not deleted. |
 | Empty comments list | Some stories have no top-level comments fetched yet; try a story with 50+ comments. |
-| Permission denied | Ensure `issues: write` is in the workflow frontmatter and the lock file is recompiled. |
+| Agent reports that `web_fetch` is unavailable | Use the deterministic `steps:` implementation in the repository's workflow source. |
+| Fetch step reports ambiguous module syntax | Put asynchronous logic inside `async function main()` and call `main()`. |
+| Permission denied | Keep `issues: read` on the agent and ensure `safe-outputs.add-comment` is present, then recompile. |
 
 ## Success Criteria
 

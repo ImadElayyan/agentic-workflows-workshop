@@ -65,7 +65,7 @@ gh aw version
 
 This workshop uses a GitHub repository as the workspace for all agentic workflows.
 
-1. **Fork** [this repository](https://github.com/copilot-dev-days/agentic-workflows-workshop) on GitHub (click **Fork** in the top-right corner), or
+1. **Fork** [this repository](https://github.com/ImadElayyan/agentic-workflows-workshop) on GitHub (click **Fork** in the top-right corner), or
 2. **Clone** your fork locally:
 
 ```bash
