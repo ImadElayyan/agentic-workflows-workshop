@@ -25,6 +25,8 @@ permissions:
 
 # Tools
 tools:
+  bash: false
+  cli-proxy: false
   web-fetch: {}
 #   github:
 #     toolsets: [default]
@@ -133,8 +135,9 @@ a comment on a GitHub issue that starts with "/hn-sentiment <url>",
 where <url> is a Hacker News story URL (e.g.
 https://news.ycombinator.com/item?id=12345), do the following:
 1) Extract the Hacker News item ID from the URL.
-2) Fetch up to 50 top-level comments for that story from the Hacker
-   News API.
+2) Use the built-in `web_fetch` tool, not shell commands such as `curl`
+   or `wget`, to fetch up to 50 top-level comments for that story from
+   the Hacker News API.
 3) Perform sentiment analysis on the comment text, classifying each
    comment as Positive, Negative, or Neutral.
 4) Produce a summary that shows: the overall sentiment (with percentage

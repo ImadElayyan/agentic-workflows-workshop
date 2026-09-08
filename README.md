@@ -105,6 +105,25 @@ git push
 gh aw run hn-daily-digest
 ```
 
+### Run Hacker News sentiment analysis from an issue
+
+Post a comment on an issue using a Hacker News story URL:
+
+```text
+/hn-sentiment https://news.ycombinator.com/item?id=12345
+```
+
+The workflow fetches up to 50 top-level comments from Hacker News and replies on the issue with the positive, negative, and neutral sentiment breakdown.
+
+If the run reports `Permission denied and could not request permission from user` for `curl` or `wget`, keep shell disabled and tell the agent to use the configured `web_fetch` tool explicitly:
+
+```yaml
+tools:
+  bash: false
+  cli-proxy: false
+  web-fetch: {}
+```
+
 ### The Action fails while validating `COPILOT_GITHUB_TOKEN`
 
 The Copilot engine needs authentication. First confirm the missing secret:
