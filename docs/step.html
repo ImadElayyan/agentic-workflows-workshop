@@ -133,7 +133,7 @@
             });
 
             // Convert internal .md links to step.html links
-            md = md.replace(/\[([^\]]+)\]\((?:\.\/)?workshop\/(\d+)-([^)]+)\.md\)/g, function(match, text, num, slug) {
+            md = md.replace(/\[([^\]]+)\]\((?:\.\/)?(?:workshop\/)?(\d+)-([^)]+)\.md\)/g, function(match, text, num, slug) {
                 const stepId = num.replace(/^0+/, '0') + '-' + slug;
                 const found = steps.find(s => s.id === stepId || s.file === `workshop/${num}-${slug}.md`);
                 if (found) {
